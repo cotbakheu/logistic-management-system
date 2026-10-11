@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LajuLogistik - Prototype Terpadu Lengkap</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        navy: '#1E3A8A',
+                        amber: '#F59E0B',
+                        success: '#10B981',
+                        danger: '#EF4444'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
+        .animate-fade-in { animation: fadeIn 0.2s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- ========================================== -->
+    <!-- ROLE SWITCHER (Hanya untuk testing)        -->
+    <!-- ========================================== -->
+    <div class="fixed top-0 left-0 w-full bg-slate-900 text-white z-50 p-2 flex gap-2 overflow-x-auto text-xs font-mono items-center shadow-lg">
+        <span class="font-bold text-amber-400 whitespace-nowrap mr-2">PROTOTYPE MENU:</span>
+        <button onclick="switchApp('app-customer-login')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded whitespace-nowrap">Login Customer</button>
+        <button onclick="switchApp('app-customer')" class="bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded whitespace-nowrap">PWA Customer</button>
+        <button onclick="switchApp('app-courier')" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1 rounded whitespace-nowrap">PWA Courier</button>
+        <button onclick="switchApp('app-admin-login')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded whitespace-nowrap">Login Admin</button>
+        <button onclick="switchApp('app-admin')" class="bg-navy hover:bg-blue-800 px-3 py-1 rounded whitespace-nowrap">Desktop Admin</button>
+    </div>
+    <div class="h-12 w-full"></div> <!-- Spacer -->
+
+    <!-- ========================================== -->
+    <!-- 1. APP: LOGIN CUSTOMER                     -->
+    <!-- ========================================== -->
+    <div id="app-customer-login" class="min-h-screen flex items-center justify-center bg-white hidden">
+        <div class="w-full max-w-md p-8">
+            <div class="text-center mb-8">
+                <div class="text-3xl text-navy mb-2"><i class="fa-solid fa-box-open"></i></div>
+                <h1 class="text-2xl font-bold text-navy">LajuLogistik</h1>
+                <p class="text-slate-500 text-sm mt-1">Masuk untuk melacak paket Anda</p>
+            </div>
+            <form onsubmit="event.preventDefault(); switchApp('app-customer');" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                    <input type="email" value="eko.customer@gmail.com" class="w-full border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-navy focus:outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                    <input type="password" value="password123" class="w-full border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-navy focus:outline-none" required>
+                </div>
+                <button type="submit" class="w-full bg-navy text-white rounded-xl py-3 font-semibold hover:bg-blue-800 transition shadow-md mt-4">
+                    Masuk <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+                <p class="text-center text-sm text-slate-500 mt-4">Belum punya akun? <a href="#" class="text-navy font-semibold">Daftar disini</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 2. APP: CUSTOMER PWA                       -->
+    <!-- ========================================== -->
+    <div id="app-customer" class="max-w-md mx-auto min-h-screen bg-slate-50 relative shadow-2xl hidden">
+        
+        <!-- HEADER -->
+        <div class="bg-navy text-white px-5 py-6 rounded-b-3xl shadow-md">
+            <div class="flex justify-between items-center mb-6">
+                <div class="font-bold text-xl tracking-tight"><i class="fa-solid fa-box-open text-amber"></i> LajuLogistik</div>
+                <div class="w-10 h-10 bg-blue-800 rounded-full flex items-center justify-center border-2 border-slate-200">
+                    <i class="fa-solid fa-user text-sm"></i>
+                </div>
+            </div>
+            <h2 class="text-2xl font-bold">Halo, Eko! 👋</h2>
+            <p class="text-blue-200 text-sm mt-1">Mau kirim atau lacak paket hari ini?</p>
+            
+            <!-- Quick Actions -->
+            <div class="flex gap-3 mt-6">
+                <button onclick="toggleModal('modalKirimPaket', true)" class="flex-1 bg-amber text-navy font-bold py-3 px-4 rounded-xl shadow hover:bg-yellow-400 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-paper-plane"></i> Kirim Paket
+                </button>
+                <button onclick="toggleModal('modalLacak', true)" class="flex-1 bg-white text-navy font-bold py-3 px-4 rounded-xl shadow hover:bg-slate-100 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-magnifying-glass"></i> Lacak Resi
+                </button>
+            </div>
+        </div>
+
+        <!-- CONTENT AREA (Switchable) -->
+        <div class="px-5 py-6 pb-24 relative">
+            
+            <!-- View: HOME -->
+            <div id="cust-view-home" class="block animate-fade-in">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-slate-800 text-lg">Sedang Berlangsung</h3>
+                    <span class="text-xs text-navy font-semibold cursor-pointer" onclick="switchCustView('cust-view-history')">Lihat Semua</span>
+                </div>
+                <!-- Card Paket Aktif -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 mb-4 cursor-pointer" onclick="toggleModal('modalDetailRiwayat', true)">
+                    <div class="flex justify-between items-start border-b border-slate-100 pb-3 mb-3">
+                        <div>
+                            <p class="text-xs text-slate-500 font-medium">No. Resi</p>
+                            <p class="font-bold text-navy text-sm">TRX-20260925-1011</p>
+                        </div>
+                        <span class="bg-amber/10 text-amber px-3 py-1 rounded-full text-xs font-bold">In Transit</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="flex-1">
+                            <p class="text-[10px] text-slate-400">Pengirim</p>
+                            <p class="text-sm font-semibold text-slate-700">Eko Customer</p>
+                        </div>
+                        <div class="text-slate-300 text-lg"><i class="fa-solid fa-arrow-right"></i></div>
+                        <div class="flex-1 text-right">
+                            <p class="text-[10px] text-slate-400">Penerima</p>
+                            <p class="text-sm font-semibold text-slate-700">Budi Santoso</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: HISTORY -->
+            <div id="cust-view-history" class="hidden animate-fade-in">
+                <h3 class="font-bold text-slate-800 text-lg mb-4">Riwayat Pengiriman</h3>
+                <div class="space-y-3">
+                    <!-- History Item 1 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer hover:border-navy transition" onclick="toggleModal('modalDetailRiwayat', true)">
+                        <div class="flex justify-between items-center mb-2">
+                            <p class="font-bold text-navy text-sm">TRX-20260925-1011</p>
+                            <span class="bg-amber/10 text-amber px-2 py-0.5 rounded text-[10px] font-bold">In Transit</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-2">Tujuan: Budi Santoso (Jakarta Selatan)</p>
+                        <p class="text-[10px] text-slate-400"><i class="fa-regular fa-clock"></i> 25 Sep 2026, 14:00</p>
+                    </div>
+                    <!-- History Item 2 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer" onclick="toggleModal('modalDetailRiwayat', true)">
+                        <div class="flex justify-between items-center mb-2">
+                            <p class="font-bold text-navy text-sm">TRX-20260910-8822</p>
+                            <span class="bg-success/10 text-success px-2 py-0.5 rounded text-[10px] font-bold">Completed</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-2">Tujuan: Siti Aminah (Bandung)</p>
+                        <p class="text-[10px] text-slate-400"><i class="fa-regular fa-clock"></i> 12 Sep 2026, 09:30</p>
+                    </div>
+                    <!-- History Item 3 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer">
+                        <div class="flex justify-between items-center mb-2">
+                            <p class="font-bold text-slate-600 text-sm">TRX-20260805-3341</p>
+                            <span class="bg-danger/10 text-danger px-2 py-0.5 rounded text-[10px] font-bold">Rejected</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-2">Tujuan: Andi (Surabaya) - Alamat tidak valid</p>
+                        <p class="text-[10px] text-slate-400"><i class="fa-regular fa-clock"></i> 05 Aug 2026, 16:15</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: PROFILE -->
+            <div id="cust-view-profile" class="hidden animate-fade-in">
+                <div class="text-center mb-6 pt-4">
+                    <div class="w-24 h-24 bg-blue-100 text-navy text-4xl rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <h3 class="font-bold text-xl text-slate-800">Eko Customer</h3>
+                    <p class="text-sm text-slate-500">Member sejak Jan 2026</p>
+                </div>
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                    <h4 class="font-bold text-navy mb-4 border-b pb-2">Informasi Pribadi</h4>
+                    <form onsubmit="event.preventDefault(); alert('Profil berhasil diperbarui!');" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Nama Lengkap</label>
+                            <input type="text" value="Eko Customer" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-1 focus:ring-navy focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Email</label>
+                            <input type="email" value="eko.customer@gmail.com" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-1 focus:ring-navy focus:outline-none" readonly>
+                            <p class="text-[10px] text-slate-400 mt-1">*Email tidak dapat diubah</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">No. WhatsApp</label>
+                            <input type="tel" value="081234567892" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-1 focus:ring-navy focus:outline-none">
+                        </div>
+                        <button type="submit" class="w-full bg-navy text-white rounded-lg py-3 font-semibold text-sm hover:bg-blue-800 mt-2">Simpan Perubahan</button>
+                        <button type="button" onclick="switchApp('app-customer-login')" class="w-full bg-red-50 text-danger border border-red-200 rounded-lg py-2 font-semibold text-sm hover:bg-red-100 mt-2">Keluar Akun</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- BOTTOM NAVIGATION -->
+        <div class="fixed bottom-0 w-full max-w-md bg-white border-t border-slate-200 flex justify-around py-3 px-2 z-40 pb-5 shadow-[0_-5px_15px_-10px_rgba(0,0,0,0.1)]">
+            <button onclick="switchCustView('cust-view-home', this)" class="cust-nav-btn text-navy flex flex-col items-center gap-1 flex-1">
+                <i class="fa-solid fa-house text-xl"></i>
+                <span class="text-[10px] font-bold">Beranda</span>
+            </button>
+            <button onclick="switchCustView('cust-view-history', this)" class="cust-nav-btn text-slate-400 flex flex-col items-center gap-1 flex-1">
+                <i class="fa-solid fa-clock-rotate-left text-xl"></i>
+                <span class="text-[10px] font-semibold">Riwayat</span>
+            </button>
+            <button onclick="switchCustView('cust-view-profile', this)" class="cust-nav-btn text-slate-400 flex flex-col items-center gap-1 flex-1">
+                <i class="fa-regular fa-user text-xl"></i>
+                <span class="text-[10px] font-semibold">Profil</span>
+            </button>
+        </div>
+
+        <!-- MODAL: Kirim Paket -->
+        <div id="modalKirimPaket" class="fixed inset-0 modal-overlay z-50 hidden flex items-end justify-center">
+            <div class="bg-white w-full max-w-md h-[85vh] rounded-t-3xl shadow-2xl flex flex-col transform translate-y-0 transition-transform">
+                <div class="p-4 border-b border-slate-100 flex justify-between items-center">
+                    <h3 class="font-bold text-navy text-lg">Buat Pengiriman Baru</h3>
+                    <button onclick="toggleModal('modalKirimPaket', false)" class="w-8 h-8 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="p-5 overflow-y-auto flex-1 space-y-5 hide-scroll">
+                    <!-- Form Kirim Paket -->
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <h4 class="font-bold text-slate-700 text-sm mb-3 flex items-center gap-2"><i class="fa-solid fa-location-dot text-amber"></i> Detail Penerima</h4>
+                        <input type="text" placeholder="Nama Penerima" class="w-full mb-3 p-3 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-navy outline-none">
+                        <input type="tel" placeholder="No. HP / WhatsApp" class="w-full mb-3 p-3 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-navy outline-none">
+                        <textarea placeholder="Alamat Lengkap Tujuan" rows="3" class="w-full p-3 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-navy outline-none"></textarea>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <h4 class="font-bold text-slate-700 text-sm mb-3 flex items-center gap-2"><i class="fa-solid fa-box text-navy"></i> Detail Barang</h4>
+                        <textarea placeholder="Deskripsi Isi Paket (cth: Pakaian, Dokumen)" rows="2" class="w-full mb-3 p-3 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-navy outline-none"></textarea>
+                        <div class="relative">
+                            <input type="number" placeholder="Berat Estimasi" class="w-full p-3 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-navy outline-none pr-12">
+                            <span class="absolute right-4 top-3 text-sm text-slate-400 font-bold">KG</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 border-t border-slate-100 bg-white">
+                    <button onclick="toggleModal('modalKirimPaket', false); alert('Permintaan berhasil dibuat! Menunggu konfirmasi Admin.')" class="w-full bg-navy text-white rounded-xl py-4 font-bold hover:bg-blue-800 shadow-lg flex justify-center items-center gap-2">
+                        Ajukan Pengiriman <i class="fa-solid fa-check"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Lacak Resi -->
+        <div id="modalLacak" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-5 relative">
+                <button onclick="toggleModal('modalLacak', false)" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <h3 class="font-bold text-navy text-lg mb-1">Lacak Paket</h3>
+                <p class="text-xs text-slate-500 mb-4">Masukkan nomor resi untuk melihat status.</p>
+                
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="inputResiLacak" placeholder="TRX-..." class="flex-1 border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-navy outline-none uppercase font-mono">
+                    <button onclick="document.getElementById('hasilLacak').classList.remove('hidden')" class="bg-amber text-navy px-4 rounded-lg font-bold hover:bg-yellow-400"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </div>
+
+                <!-- Hasil Lacak (Awalnya Hidden) -->
+                <div id="hasilLacak" class="hidden border-t pt-4 mt-2 animate-fade-in">
+                    <p class="font-bold text-sm text-slate-800 mb-3">Hasil: <span class="text-navy">TRX-20260925-1011</span></p>
+                    <div class="relative pl-6 space-y-4 before:absolute before:inset-y-0 before:left-2.5 before:w-0.5 before:bg-slate-200">
+                        <div class="relative z-10">
+                            <div class="absolute -left-6 bg-amber text-white w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-white"><i class="fa-solid fa-truck-fast text-[8px]"></i></div>
+                            <p class="text-sm font-bold text-slate-700">In Transit</p>
+                            <p class="text-xs text-slate-500">Paket sedang dalam perjalanan ke kota tujuan.</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">25 Sep 2026, 14:00</p>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="absolute -left-6 bg-slate-300 text-white w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-white"><i class="fa-solid fa-hand-holding text-[8px]"></i></div>
+                            <p class="text-sm font-bold text-slate-700">Picked Up</p>
+                            <p class="text-xs text-slate-500">Paket telah dijemput oleh kurir (Budi).</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">25 Sep 2026, 10:30</p>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="absolute -left-6 bg-slate-300 text-white w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-white"><i class="fa-solid fa-clipboard-check text-[8px]"></i></div>
+                            <p class="text-sm font-bold text-slate-700">Placed</p>
+                            <p class="text-xs text-slate-500">Permintaan pengiriman diterima.</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">25 Sep 2026, 09:00</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Detail Riwayat -->
+        <div id="modalDetailRiwayat" class="fixed inset-0 modal-overlay z-50 hidden flex items-end justify-center">
+            <div class="bg-white w-full max-w-md h-[70vh] rounded-t-3xl shadow-2xl p-5 relative overflow-y-auto hide-scroll">
+                <button onclick="toggleModal('modalDetailRiwayat', false)" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 bg-slate-100 p-2 rounded-full"><i class="fa-solid fa-xmark"></i></button>
+                <div class="text-center mb-6 mt-4">
+                    <span class="bg-amber/20 text-amber px-4 py-1 rounded-full text-xs font-bold mb-2 inline-block">IN TRANSIT</span>
+                    <h3 class="font-bold text-navy text-xl font-mono">TRX-20260925-1011</h3>
+                    <p class="text-sm text-slate-500">Kurir: Budi Kurir (081234567891)</p>
+                </div>
+                
+                <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 mb-4">
+                    <h4 class="text-xs font-bold text-slate-400 mb-2 uppercase">Informasi Rute</h4>
+                    <div class="flex items-start gap-3 mb-3">
+                        <div class="mt-1"><i class="fa-solid fa-circle-dot text-slate-400 text-sm"></i></div>
+                        <div>
+                            <p class="text-xs text-slate-500">Asal (Pengirim)</p>
+                            <p class="text-sm font-semibold text-slate-800">Eko Customer</p>
+                            <p class="text-xs text-slate-600">Jl. Mawar No. 10, Jakarta Selatan</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="mt-1"><i class="fa-solid fa-location-dot text-amber text-sm"></i></div>
+                        <div>
+                            <p class="text-xs text-slate-500">Tujuan (Penerima)</p>
+                            <p class="text-sm font-semibold text-slate-800">Budi Santoso</p>
+                            <p class="text-xs text-slate-600">Jl. Melati No. 5, Bandung</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 mb-6">
+                    <h4 class="text-xs font-bold text-slate-400 mb-2 uppercase">Detail Paket</h4>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-sm text-slate-500">Isi Paket</span>
+                        <span class="text-sm font-semibold text-slate-800">Pakaian & Sepatu</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-sm text-slate-500">Berat</span>
+                        <span class="text-sm font-semibold text-slate-800">2.5 KG</span>
+                    </div>
+                </div>
+
+                <!-- Tombol Konfirmasi Selesai (Hanya muncul jika status Delivered) -->
+                <button class="w-full bg-slate-200 text-slate-400 rounded-xl py-3 font-bold cursor-not-allowed mb-4">Konfirmasi Paket Diterima</button>
+                <p class="text-center text-[10px] text-slate-400">Tombol konfirmasi aktif jika status DELIVERED</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 3. APP: COURIER PWA                        -->
+    <!-- ========================================== -->
+    <div id="app-courier" class="max-w-md mx-auto min-h-screen bg-slate-50 relative shadow-2xl hidden">
+        <div class="bg-emerald-600 text-white px-5 py-6 rounded-b-3xl shadow-md">
+            <div class="flex justify-between items-center mb-4">
+                <div class="font-bold text-lg"><i class="fa-solid fa-motorcycle"></i> Courier App</div>
+                <div class="w-8 h-8 bg-emerald-800 rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-user text-xs"></i>
+                </div>
+            </div>
+            <h2 class="text-xl font-bold">Semangat, Budi!</h2>
+            <p class="text-emerald-100 text-sm">Ada 1 tugas aktif hari ini.</p>
+        </div>
+        <div class="px-5 py-6">
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-emerald-100 mb-4">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-3">
+                    <span class="font-mono font-bold text-slate-800">TRX-20260925-1011</span>
+                    <span class="bg-amber/10 text-amber px-2 py-1 rounded text-xs font-bold">In Transit</span>
+                </div>
+                <p class="text-xs text-slate-500"><i class="fa-solid fa-location-dot text-emerald-500 w-4"></i> Tujuan: Jl. Melati No 5, Bandung</p>
+                <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-user text-emerald-500 w-4"></i> Penerima: Budi Santoso (0812xxx)</p>
+                
+                <button onclick="toggleModal('modalUpdateCourier', true)" class="w-full mt-4 bg-emerald-500 text-white font-bold py-3 rounded-xl shadow hover:bg-emerald-600">
+                    Update Status
+                </button>
+            </div>
+        </div>
+
+        <!-- MODAL: Update Status Courier -->
+        <div id="modalUpdateCourier" class="fixed inset-0 modal-overlay z-50 hidden flex items-end justify-center">
+            <div class="bg-white w-full max-w-md p-5 rounded-t-3xl shadow-2xl transform transition-transform">
+                <div class="flex justify-between items-center mb-5">
+                    <h3 class="font-bold text-emerald-800 text-lg">Update TRX-20260925-1011</h3>
+                    <button onclick="toggleModal('modalUpdateCourier', false)" class="text-slate-400"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <label class="block text-sm font-bold text-slate-700 mb-2">Ubah Status Menjadi:</label>
+                <select class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none mb-4 bg-slate-50">
+                    <option value="IN_TRANSIT">In Transit (Perjalanan)</option>
+                    <option value="DELIVERED">Delivered (Sampai Tujuan)</option>
+                </select>
+                
+                <label class="block text-sm font-bold text-slate-700 mb-2">Catatan Kurir:</label>
+                <textarea rows="2" placeholder="Cth: Dititipkan ke satpam" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none mb-4"></textarea>
+                
+                <div class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center mb-5 bg-slate-50 cursor-pointer hover:bg-slate-100">
+                    <i class="fa-solid fa-camera text-3xl text-emerald-500 mb-2"></i>
+                    <p class="text-sm font-bold text-slate-600">Ambil Foto Bukti (POD)</p>
+                    <p class="text-xs text-slate-400">Wajib untuk status Delivered</p>
+                </div>
+                <button onclick="toggleModal('modalUpdateCourier', false)" class="w-full bg-emerald-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-emerald-700">Simpan Update</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 4. APP: LOGIN ADMIN                        -->
+    <!-- ========================================== -->
+    <div id="app-admin-login" class="min-h-screen flex items-center justify-center bg-slate-900 hidden">
+        <div class="w-full max-w-sm bg-white p-8 rounded-2xl shadow-2xl">
+            <div class="text-center mb-8">
+                <div class="text-3xl text-navy mb-2"><i class="fa-solid fa-shield-halved"></i></div>
+                <h1 class="text-2xl font-bold text-navy">Admin Portal</h1>
+                <p class="text-slate-500 text-sm mt-1">Sistem Manajemen Logistik</p>
+            </div>
+            <form onsubmit="event.preventDefault(); switchApp('app-admin');" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Email Admin</label>
+                    <input type="email" value="admin@alur.com" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-navy outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Password</label>
+                    <input type="password" value="********" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-navy outline-none">
+                </div>
+                <button type="submit" class="w-full bg-navy text-white rounded-lg py-3 font-bold hover:bg-blue-800 transition mt-2">
+                    Masuk Dashboard
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 5. APP: DESKTOP ADMIN                      -->
+    <!-- ========================================== -->
+    <div id="app-admin" class="min-h-screen bg-slate-100 hidden flex">
+        
+        <!-- SIDEBAR -->
+        <div class="w-64 bg-navy text-white min-h-screen fixed shadow-xl z-20 flex flex-col">
+            <div class="p-6 flex items-center gap-3 border-b border-blue-800">
+                <i class="fa-solid fa-box-open text-amber text-2xl"></i>
+                <span class="font-bold text-xl tracking-wide">Admin UI</span>
+            </div>
+            <nav class="flex-1 mt-6">
+                <ul class="space-y-1 px-3">
+                    <li><button onclick="switchAdminPage('admin-view-dashboard', this)" class="admin-nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-blue-800 text-white font-medium transition"><i class="fa-solid fa-chart-pie w-5"></i> Dashboard</button></li>
+                    <li><button onclick="switchAdminPage('admin-view-shipments', this)" class="admin-nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-200 hover:bg-blue-800/50 hover:text-white font-medium transition"><i class="fa-solid fa-table-list w-5"></i> All Shipments</button></li>
+                    <li><button onclick="switchAdminPage('admin-view-couriers', this)" class="admin-nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-200 hover:bg-blue-800/50 hover:text-white font-medium transition"><i class="fa-solid fa-users w-5"></i> Data Couriers</button></li>
+                    <li><button onclick="switchAdminPage('admin-view-settings', this)" class="admin-nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-200 hover:bg-blue-800/50 hover:text-white font-medium transition"><i class="fa-solid fa-gear w-5"></i> System Settings</button></li>
+                </ul>
+            </nav>
+            <div class="p-4 border-t border-blue-800">
+                <button onclick="switchApp('app-admin-login')" class="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-red-300 hover:bg-red-500/20 font-medium transition"><i class="fa-solid fa-arrow-right-from-bracket w-5"></i> Logout</button>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT AREA -->
+        <div class="ml-64 flex-1 flex flex-col">
+            <!-- TOPBAR -->
+            <header class="bg-white h-16 shadow-sm flex items-center justify-between px-8 z-10 border-b border-slate-200">
+                <h2 id="admin-page-title" class="font-bold text-slate-800 text-lg">Dashboard Overview</h2>
+                <div class="flex items-center gap-4">
+                    <div class="relative">
+                        <i class="fa-solid fa-bell text-slate-400 text-xl cursor-pointer hover:text-navy"></i>
+                        <span class="absolute -top-1 -right-1 bg-danger text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">1</span>
+                    </div>
+                    <div class="flex items-center gap-2 border-l pl-4 border-slate-200">
+                        <div class="w-8 h-8 bg-navy text-white rounded-full flex items-center justify-center text-sm font-bold">SA</div>
+                        <span class="text-sm font-bold text-slate-700">Super Admin</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="p-8 relative h-full">
+                
+                <!-- View: DASHBOARD -->
+                <div id="admin-view-dashboard" class="block animate-fade-in">
+                    <!-- Metrics Row -->
+                    <div class="grid grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-amber">
+                            <p class="text-sm font-bold text-slate-500 uppercase">Pending Orders</p>
+                            <h3 class="text-3xl font-bold text-navy mt-1">12</h3>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-blue-500">
+                            <p class="text-sm font-bold text-slate-500 uppercase">In Transit</p>
+                            <h3 class="text-3xl font-bold text-navy mt-1">45</h3>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-success">
+                            <p class="text-sm font-bold text-slate-500 uppercase">Delivered Today</p>
+                            <h3 class="text-3xl font-bold text-navy mt-1">28</h3>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-danger">
+                            <p class="text-sm font-bold text-slate-500 uppercase">Rejected</p>
+                            <h3 class="text-3xl font-bold text-navy mt-1">3</h3>
+                        </div>
+                    </div>
+
+                    <!-- Recent Shipments Table (With Visual Alert) -->
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                            <h3 class="font-bold text-slate-800"><i class="fa-solid fa-triangle-exclamation text-amber mr-2"></i> Action Required (Recent Shipments)</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-slate-100 text-slate-600 font-bold">
+                                    <tr>
+                                        <th class="p-4">Tracking No</th>
+                                        <th class="p-4">Customer</th>
+                                        <th class="p-4">Origin &rarr; Dest</th>
+                                        <th class="p-4">Status</th>
+                                        <th class="p-4">Created (Wait Time)</th>
+                                        <th class="p-4 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-200">
+                                    <!-- ALERT ROW: Pending > 30 Mins -->
+                                    <tr class="bg-red-50 hover:bg-red-100 transition animate-pulse">
+                                        <td class="p-4 font-mono font-bold text-danger">TRX-20260926-9999</td>
+                                        <td class="p-4 font-semibold text-slate-700">Eko Customer</td>
+                                        <td class="p-4 text-slate-600 text-xs">Jkt &rarr; Bdg</td>
+                                        <td class="p-4"><span class="bg-danger text-white px-3 py-1 rounded-full text-[10px] font-bold">PENDING ALERT</span></td>
+                                        <td class="p-4 text-danger font-bold">45 Mins ago</td>
+                                        <td class="p-4 text-center space-x-2">
+                                            <button onclick="toggleModal('modalAdminAssign', true)" class="bg-navy text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-800 shadow">Assign</button>
+                                            <button onclick="toggleModal('modalAdminReject', true)" class="bg-white text-danger border border-red-300 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-50">Reject</button>
+                                        </td>
+                                    </tr>
+                                    <!-- Normal Row -->
+                                    <tr class="hover:bg-slate-50 transition">
+                                        <td class="p-4 font-mono font-bold text-navy">TRX-20260925-1011</td>
+                                        <td class="p-4 font-semibold text-slate-700">Budi Santoso</td>
+                                        <td class="p-4 text-slate-600 text-xs">Sby &rarr; Mlg</td>
+                                        <td class="p-4"><span class="bg-amber/20 text-amber px-3 py-1 rounded-full text-[10px] font-bold">IN TRANSIT</span></td>
+                                        <td class="p-4 text-slate-500">2 Hours ago</td>
+                                        <td class="p-4 text-center">
+                                            <button onclick="toggleModal('modalAdminDetail', true)" class="text-navy hover:text-blue-800 bg-slate-100 px-3 py-1.5 rounded-lg text-xs font-bold"><i class="fa-solid fa-eye"></i> Details</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View: ALL SHIPMENTS -->
+                <div id="admin-view-shipments" class="hidden animate-fade-in">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-[75vh] flex flex-col">
+                        <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                            <div class="flex gap-3 items-center">
+                                <input type="text" placeholder="Cari Resi / Nama..." class="border border-slate-300 rounded-lg px-4 py-2 text-sm focus:ring-navy outline-none w-64">
+                                <select class="border border-slate-300 rounded-lg px-4 py-2 text-sm outline-none">
+                                    <option value="">Semua Status</option>
+                                    <option value="PENDING">Pending</option>
+                                    <option value="IN_TRANSIT">In Transit</option>
+                                    <option value="DELIVERED">Delivered</option>
+                                </select>
+                            </div>
+                            <button class="bg-navy text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-800"><i class="fa-solid fa-download mr-2"></i> Export CSV</button>
+                        </div>
+                        <div class="overflow-auto flex-1">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-slate-100 text-slate-600 font-bold sticky top-0 z-10">
+                                    <tr>
+                                        <th class="p-4">Tracking No</th>
+                                        <th class="p-4">Customer</th>
+                                        <th class="p-4">Kurir</th>
+                                        <th class="p-4">Status</th>
+                                        <th class="p-4">Tanggal</th>
+                                        <th class="p-4 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-200">
+                                    <tr class="hover:bg-slate-50 transition">
+                                        <td class="p-4 font-mono font-bold text-navy">TRX-20260925-1011</td>
+                                        <td class="p-4 font-semibold text-slate-700">Eko Customer</td>
+                                        <td class="p-4 text-slate-600">Budi Kurir</td>
+                                        <td class="p-4"><span class="bg-amber/20 text-amber px-2 py-1 rounded text-[10px] font-bold">IN TRANSIT</span></td>
+                                        <td class="p-4 text-slate-500 text-xs">25 Sep 2026</td>
+                                        <td class="p-4 text-center">
+                                            <button onclick="toggleModal('modalAdminDetail', true)" class="text-navy bg-slate-100 p-2 rounded hover:bg-slate-200"><i class="fa-solid fa-eye"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50 transition">
+                                        <td class="p-4 font-mono font-bold text-slate-600">TRX-20260910-8822</td>
+                                        <td class="p-4 font-semibold text-slate-700">Siti Aminah</td>
+                                        <td class="p-4 text-slate-600">Agus Kurir</td>
+                                        <td class="p-4"><span class="bg-success/20 text-success px-2 py-1 rounded text-[10px] font-bold">COMPLETED</span></td>
+                                        <td class="p-4 text-slate-500 text-xs">10 Sep 2026</td>
+                                        <td class="p-4 text-center">
+                                            <button onclick="toggleModal('modalAdminDetail', true)" class="text-navy bg-slate-100 p-2 rounded hover:bg-slate-200"><i class="fa-solid fa-eye"></i></button>
+                                        </td>
+                                    </tr>
+                                    <!-- dummy rows bisa diperbanyak disini -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View: COURIERS -->
+                <div id="admin-view-couriers" class="hidden animate-fade-in">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-bold text-lg text-slate-800">Manajemen Kurir</h3>
+                            <button class="bg-success text-white px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-emerald-600"><i class="fa-solid fa-plus mr-2"></i> Tambah Kurir</button>
+                        </div>
+                        <div class="grid grid-cols-3 gap-6">
+                            <!-- Card Kurir -->
+                            <div class="border border-slate-200 rounded-xl p-5 flex items-center gap-4 hover:shadow-md transition">
+                                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-motorcycle"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800">Budi Kurir</h4>
+                                    <p class="text-xs text-slate-500">081234567891</p>
+                                    <p class="text-[10px] font-bold text-success mt-1">Status: Aktif (2 Tugas)</p>
+                                </div>
+                            </div>
+                            <div class="border border-slate-200 rounded-xl p-5 flex items-center gap-4 hover:shadow-md transition">
+                                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-motorcycle"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800">Agus Kurir</h4>
+                                    <p class="text-xs text-slate-500">089988776655</p>
+                                    <p class="text-[10px] font-bold text-slate-400 mt-1">Status: Offline</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View: SETTINGS -->
+                <div id="admin-view-settings" class="hidden animate-fade-in">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 max-w-2xl">
+                        <h3 class="font-bold text-lg text-slate-800 mb-6 border-b pb-3"><i class="fa-solid fa-sliders text-navy mr-2"></i> Konfigurasi Sistem Bisnis</h3>
+                        <form onsubmit="event.preventDefault(); alert('Pengaturan Disimpan!');" class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-1">Visual Alert Timeout (Menit)</label>
+                                <p class="text-xs text-slate-500 mb-2">Durasi status PENDING sebelum muncul baris merah peringatan di Dashboard.</p>
+                                <input type="number" value="30" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-navy outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-1">Auto-Complete Days (Hari)</label>
+                                <p class="text-xs text-slate-500 mb-2">Durasi hari status DELIVERED otomatis diubah ke COMPLETED oleh Cron Job.</p>
+                                <input type="number" value="3" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-navy outline-none">
+                            </div>
+                            <div class="pt-4 border-t border-slate-100">
+                                <button type="submit" class="bg-navy text-white px-6 py-3 rounded-lg text-sm font-bold shadow hover:bg-blue-800">Simpan Konfigurasi</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+
+        <!-- MODAL ADMIN: Assign Courier -->
+        <div id="modalAdminAssign" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-sm rounded-xl shadow-2xl p-6 relative">
+                <button onclick="toggleModal('modalAdminAssign', false)" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <h3 class="font-bold text-navy text-lg mb-1">Assign Courier</h3>
+                <p class="text-xs text-slate-500 mb-4 font-mono">Resi: TRX-20260926-9999</p>
+                
+                <form onsubmit="event.preventDefault(); toggleModal('modalAdminAssign', false); alert('Kurir berhasil ditugaskan!');">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Pilih Kurir:</label>
+                    <select class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-navy outline-none mb-6">
+                        <option value="">-- Pilih Kurir Aktif --</option>
+                        <option value="1">Budi Kurir (2 Tugas)</option>
+                        <option value="2">Agus Kurir (0 Tugas)</option>
+                    </select>
+                    <button type="submit" class="w-full bg-navy text-white font-bold py-3 rounded-lg hover:bg-blue-800">Assign & Update Status</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL ADMIN: Reject DR -->
+        <div id="modalAdminReject" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-sm rounded-xl shadow-2xl p-6 relative border-t-4 border-danger">
+                <button onclick="toggleModal('modalAdminReject', false)" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <h3 class="font-bold text-danger text-lg mb-1">Reject Request</h3>
+                <p class="text-xs text-slate-500 mb-4 font-mono">Resi: TRX-20260926-9999</p>
+                
+                <form onsubmit="event.preventDefault(); toggleModal('modalAdminReject', false); alert('Permintaan Ditolak!');">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Alasan Penolakan:</label>
+                    <textarea required rows="3" placeholder="Alamat tidak valid, dll..." class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-danger outline-none mb-6"></textarea>
+                    <div class="flex gap-3">
+                        <button type="button" onclick="toggleModal('modalAdminReject', false)" class="flex-1 bg-slate-100 text-slate-600 font-bold py-3 rounded-lg hover:bg-slate-200">Batal</button>
+                        <button type="submit" class="flex-1 bg-danger text-white font-bold py-3 rounded-lg hover:bg-red-600">Reject Data</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL ADMIN: View Detail -->
+        <div id="modalAdminDetail" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-lg rounded-xl shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+                <button onclick="toggleModal('modalAdminDetail', false)" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-slate-100 p-2 rounded-full"><i class="fa-solid fa-xmark"></i></button>
+                <div class="flex items-center gap-3 mb-4 border-b border-slate-100 pb-4">
+                    <div class="bg-amber/20 text-amber px-3 py-1 rounded text-xs font-bold inline-block">IN TRANSIT</div>
+                    <h3 class="font-bold text-navy text-xl font-mono">TRX-20260925-1011</h3>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="bg-slate-50 p-3 rounded-lg">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Customer</p>
+                        <p class="text-sm font-semibold text-slate-800">Eko Customer</p>
+                        <p class="text-xs text-navy">ID: #409</p>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-lg">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Assigned Courier</p>
+                        <p class="text-sm font-semibold text-slate-800">Budi Kurir</p>
+                        <p class="text-xs text-emerald-600">ID: #102</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-4 rounded-lg mb-4 border border-slate-200">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase mb-2">Package Details</p>
+                    <div class="flex justify-between text-sm mb-1"><span>Deskripsi:</span> <span class="font-semibold">Pakaian & Sepatu</span></div>
+                    <div class="flex justify-between text-sm"><span>Berat:</span> <span class="font-semibold">2.5 KG</span></div>
+                </div>
+
+                <div>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase mb-2">Tracking History Logs</p>
+                    <div class="border-l-2 border-slate-200 ml-2 pl-4 space-y-3">
+                        <div>
+                            <p class="text-xs font-bold text-slate-700">IN TRANSIT</p>
+                            <p class="text-[10px] text-slate-500">25 Sep 2026 14:00 by Budi Kurir</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-700">PICKED UP</p>
+                            <p class="text-[10px] text-slate-500">25 Sep 2026 10:30 by Budi Kurir</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-700">ASSIGNED</p>
+                            <p class="text-[10px] text-slate-500">25 Sep 2026 09:15 by Super Admin</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-700">PENDING</p>
+                            <p class="text-[10px] text-slate-500">25 Sep 2026 09:00 System</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        // 1. App Switcher Logic
+        function switchApp(appId) {
+            const apps = ['app-customer-login', 'app-customer', 'app-courier', 'app-admin-login', 'app-admin'];
+            apps.forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(appId).classList.remove('hidden');
+            
+            // Reset Admin Page to Dashboard when opening Admin App
+            if(appId === 'app-admin') {
+                document.querySelectorAll('.admin-nav-btn')[0].click();
+            }
+        }
+
+        // 2. Customer View Navigation Logic
+        function switchCustView(viewId, btnEl) {
+            const views = ['cust-view-home', 'cust-view-history', 'cust-view-profile'];
+            views.forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.add('hidden');
+                el.classList.remove('block');
+            });
+            const activeView = document.getElementById(viewId);
+            activeView.classList.remove('hidden');
+            activeView.classList.add('block');
+
+            // Update bottom nav styling
+            if(btnEl) {
+                document.querySelectorAll('.cust-nav-btn').forEach(btn => {
+                    btn.classList.remove('text-navy');
+                    btn.classList.add('text-slate-400');
+                    btn.querySelector('span').classList.replace('font-bold', 'font-semibold');
+                });
+                btnEl.classList.remove('text-slate-400');
+                btnEl.classList.add('text-navy');
+                btnEl.querySelector('span').classList.replace('font-semibold', 'font-bold');
+            }
+        }
+
+        // 3. Admin View Navigation Logic
+        function switchAdminPage(viewId, btnEl) {
+            const views = ['admin-view-dashboard', 'admin-view-shipments', 'admin-view-couriers', 'admin-view-settings'];
+            const titles = {
+                'admin-view-dashboard': 'Dashboard Overview',
+                'admin-view-shipments': 'Semua Data Pengiriman',
+                'admin-view-couriers': 'Manajemen Kurir',
+                'admin-view-settings': 'Pengaturan Sistem'
+            };
+            
+            views.forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.add('hidden');
+                el.classList.remove('block');
+            });
+            
+            const activeView = document.getElementById(viewId);
+            activeView.classList.remove('hidden');
+            activeView.classList.add('block');
+            
+            // Update Title
+            document.getElementById('admin-page-title').innerText = titles[viewId];
+
+            // Update sidebar styling
+            if(btnEl) {
+                document.querySelectorAll('.admin-nav-btn').forEach(btn => {
+                    btn.classList.remove('bg-blue-800', 'text-white');
+                    btn.classList.add('text-blue-200');
+                });
+                btnEl.classList.remove('text-blue-200');
+                btnEl.classList.add('bg-blue-800', 'text-white');
+            }
+        }
+
+        // 4. Modal Toggler Logic
+        function toggleModal(modalId, show) {
+            const modal = document.getElementById(modalId);
+            if(show) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+                // Reset hasil lacak jika modal lacak ditutup
+                if(modalId === 'modalLacak') {
+                    document.getElementById('hasilLacak').classList.add('hidden');
+                    document.getElementById('inputResiLacak').value = '';
+                }
+            }
+        }
+
+        // Initialize default app on load (For dev preview)
+        window.onload = () => {
+            switchApp('app-customer-login');
+        }
+    </script>
+</body>
+</html>
