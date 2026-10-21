@@ -64,12 +64,39 @@ class ShipmentListResponse(BaseModel):
     limit: int
 
 
+class ShipmentUserResponse(BaseModel):
+    id: int
+    name: str
+
+
 class TrackingHistoryResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     status: ShipmentStatus
     notes: str
     created_at: datetime
+
+
+class ShipmentDetailResponse(BaseModel):
+    id: int
+    tracking_number: str
+    customer: ShipmentUserResponse
+    courier: ShipmentUserResponse | None
+    sender_name: str
+    sender_phone: str
+    origin_address: str
+    recipient_name: str
+    recipient_phone: str
+    destination_address: str
+    package_description: str
+    weight_kg: Decimal
+    status: ShipmentStatus
+    rejection_reason: str | None
+    proof_image_url: str | None
+    delivered_at: datetime | None
+    created_at: datetime
+    updated_at: datetime
+    tracking_history: list[TrackingHistoryResponse]
 
 
 class ShipmentTrackingResponse(BaseModel):

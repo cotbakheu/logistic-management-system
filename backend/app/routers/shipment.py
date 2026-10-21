@@ -9,6 +9,7 @@ from schemas.base import BaseResponse
 from schemas.shipment import (
     ShipmentCreatePayload,
     ShipmentCreateResponse,
+    ShipmentDetailResponse,
     ShipmentListResponse,
     ShipmentTrackingResponse,
 )
@@ -16,6 +17,7 @@ from services.shipment import (
     confirm_shipment_service,
     create_shipment_service,
     get_customer_shipments_service,
+    get_shipment_detail_service,
     get_shipment_tracking_service,
 )
 
@@ -76,6 +78,41 @@ async def get_my_shipments(
         "status": "success",
         "message": "Customer shipments retrieved successfully",
         "data": shipments,
+    }
+
+
+@router.get(
+    "/{shipment_id}/detail",
+    response_model=BaseResponse[ShipmentDetailResponse],
+)
+async def get_shipment_detail(
+    shipment_id: int,
+    session: SessionDep,
+    current_user: User = Depends(
+        require_roles(UserRole.ADMIN, UserRole.COURIER)
+    ),
+) -> BaseResponse[ShipmentDetailResponse]:
+    try:
+        shipment = await get_shipment_detail_service(
+            shipment_id=shipment_id,
+            current_user=current_user,
+            session=session,
+        )
+    except LookupError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"detail": str(exc), "code": "NOT_FOUND"},
+        ) from exc
+    except PermissionError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"detail": str(exc), "code": "FORBIDDEN"},
+        ) from exc
+
+    return {
+        "status": "success",
+        "message": "Shipment details retrieved successfully",
+        "data": shipment,
     }
 
 
