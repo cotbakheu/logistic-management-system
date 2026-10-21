@@ -2,9 +2,11 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.security import hash_password
+from core.security import hash_password, verify_password
 from db.models.user import User, UserRole
-from schemas.auth import RegisterPayload
+from schemas.auth import RegisterPayload, LoginPayload
+
+from core.security import create_access_token
 
 
 async def register_user_service(
@@ -39,3 +41,22 @@ async def register_user_service(
         ) from exc
 
     return user
+
+
+async def login_user_service(session: AsyncSession, credentials: LoginPayload) -> dict:
+    user = await session.scalar(select(User).where(User.email == credentials.email))
+
+    if not user or not verify_password(credentials.password, user.password_hash):
+        raise ValueError("Invalid email or password")
+
+    access_token = create_access_token(user.id)
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "name": user.name,
+            "role": user.role.value,
+        },
+    }
