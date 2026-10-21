@@ -20,7 +20,7 @@ async def login():
     return {"message": "Login successful"}
 
 
-@router.post("/courier/register")
+@router.post("/register")
 async def register(session: SessionDep, payload: RegisterPayload):
     try:
         data = create_user(session, payload)

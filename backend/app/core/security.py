@@ -1,14 +1,22 @@
-from pwdlib import PasswordHash
+import bcrypt
 
-password_hash = PasswordHash.recommended()
+BCRYPT_COST_FACTOR = 12
 
 
 def hash_password(password: str) -> str:
-    return password_hash.hash(password)
+    password_bytes = password.encode("utf-8")
+
+    salt = bcrypt.gensalt(rounds=BCRYPT_COST_FACTOR)
+    hashed = bcrypt.hashpw(password_bytes, salt)
+
+    return hashed.decode("utf-8")
 
 
 def verify_password(
     plain_password: str,
     hashed_password: str,
 ) -> bool:
-    return password_hash.verify(plain_password, hashed_password)
+    return bcrypt.checkpw(
+        plain_password.encode("utf-8"),
+        hashed_password.encode("utf-8"),
+    )

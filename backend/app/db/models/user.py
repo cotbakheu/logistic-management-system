@@ -8,6 +8,7 @@ from enum import Enum
 class UserRole(str, Enum):
     ADMIN = "ADMIN"
     COURIER = "COURIER"
+    CUSTOMER = "CUSTOMER"
 
 
 class User(SQLModel, table=True):

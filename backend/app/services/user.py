@@ -14,7 +14,7 @@ def create_user(session: SessionDep, user: User):
     db_user = User(
         name=user.name,
         password_hash=password_hash,
-        role=UserRole.COURIER,
+        role=UserRole.CUSTOMER,
         phone=user.phone,
         email=user.email,
         is_active=True,
