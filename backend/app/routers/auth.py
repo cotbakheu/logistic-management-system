@@ -1,12 +1,16 @@
 from fastapi import APIRouter, HTTPException, status
+from sqlalchemy import select
 
 from db.session import SessionDep
+
+# Models
+from db.models.user import User
 
 # Schemas
 from schemas.auth import RegisterPayload
 
 # Services
-from services.user import create_user
+from services.auth import register_user_service
 
 router = APIRouter(
     prefix="/auth",
@@ -15,19 +19,21 @@ router = APIRouter(
 )
 
 
-@router.post("/login")
-async def login():
-    return {"message": "Login successful"}
-
-
-@router.post("/register")
+@router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(session: SessionDep, payload: RegisterPayload):
     try:
-        data = create_user(session, payload)
-        return {"message": "Register successful", "data": data}
-    except Exception as e:
-        print(f"Register failed: {str(e)}")
-        return HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Register failed: {str(e)}",
+        user: User = await register_user_service(
+            payload,
+            session,
         )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail=str(exc),
+        ) from exc
+
+    return {
+        "status": "success",
+        "message": "User registered successfully",
+        "data": user,
+    }
