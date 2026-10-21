@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 
-from db.connection import SessionDep
+from db.session import SessionDep
 
 # Schemas
 from schemas.auth import RegisterPayload

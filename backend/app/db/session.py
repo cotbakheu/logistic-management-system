@@ -3,13 +3,9 @@ from typing import Annotated
 
 from sqlmodel import Session, create_engine
 
-import os
+from core.config import settings
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
-database_url = f"postgresql+psycopg://{os.getenv('DB_URL')}"
+database_url = f"postgresql+psycopg://{settings.DATABASE_URL}"
 
 engine = create_engine(database_url)
 

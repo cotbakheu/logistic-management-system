@@ -111,7 +111,7 @@ dependencies = [
     { name = "psycopg", extra = ["binary"] },
     { name = "pwdlib", extra = ["argon2"] },
     { name = "pydantic" },
-    { name = "python-dotenv" },
+    { name = "pydantic-settings" },
     { name = "sqlmodel" },
 ]
 
@@ -121,7 +121,7 @@ requires-dist = [
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.6" },
     { name = "pwdlib", extras = ["argon2"], specifier = ">=0.3.1" },
     { name = "pydantic", specifier = ">=2.14.1" },
-    { name = "python-dotenv", specifier = ">=1.2.4" },
+    { name = "pydantic-settings", specifier = ">=2.16.1" },
     { name = "sqlmodel", specifier = ">=0.0.48" },
 ]
 

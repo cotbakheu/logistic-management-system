@@ -1,9 +1,9 @@
 from sqlmodel import insert, select
 
-from db.connection import SessionDep
+from db.session import SessionDep
 
-# Schemas
-from schemas.user import User, UserRole
+# Models
+from db.models.user import User, UserRole
 
 # Core
 from core.security import hash_password
